@@ -120,13 +120,26 @@ function [x] = risolve(A,b,opt)
        error("Uno e un solo campo della struttura deve essere true.")
    end
    
+   if((istriu(A)||istril(A)) && any(find(abs(diag(A))<=eps(norm(A))))==1)
+      error("La matrice triangolare è singolare.")
+   end
+   
     %In base al campo della struttura specificato eseguo l'algoritmo
     %corrispondente
     if(opt.sup)
+        if(~istriu(A))
+            warning("La struttura non è conforme con la matrice,deve essere triangolare superiore, i calcoli potrebbero essere sbagliati.")
+        end
         x=back_sub(A,b);
     elseif(opt.inf)
+        if(~istril(A))
+            warning("La struttura non è conforme con la matrice,deve essere triangolare inferiore, i calcoli potrebbero essere sbagliati.")
+        end
         x=forward_sub(A,b);
     elseif(opt.full)
+        if(istriu(A)||istril(A))
+            warning("La struttura non è conforme con la matrice,deve essere piena, i calcoli potrebbero essere sbagliati.")
+        end
         x=gauss(A,b);
     end
 
@@ -134,9 +147,7 @@ end
 
 
 function [x_b] = back_sub(A,b) %Funzione di back substitution
-   if any(find(abs(diag(A))<=eps(norm(A))))==1
-        error("Back Substitution: La matrice è singolare.")
-   end
+   
    n=length(A);
    x_b=zeros(1,n);
    x_b(n)=b(n)/A(n,n);
@@ -146,14 +157,22 @@ function [x_b] = back_sub(A,b) %Funzione di back substitution
 end
 
 function [x_f] = forward_sub(A,b) %Funzione di forward substitution
-   if any(find(abs(diag(A))<=eps(norm(A))))==1
-        error("Forward Substitution: La matrice è singolare.")
-   end
+   
    n=length(A);
    x_f=zeros(1,n);
    x_f(1)=b(1)/A(1,1);
    for i=2:n
        x_f(i)=((b(i)-A(i,1:i-1)*x_f(1:i-1)'))/A(i,i);
+   end
+end
+
+function [x_b] = back_sub_gauss(A,b,piv) %Funzione di back substitution per gauss
+   
+   n=length(A);
+   x_b=zeros(1,n);
+   x_b(piv(n))=b(piv(n))/A(piv(n),n);
+   for i=n-1:-1:1
+       x_b(piv(i))=(b(piv(i))-A(piv(i),i+1:n)*x_b(piv(i+1:n))')/A(piv(i),i);
    end
 end
 
@@ -181,6 +200,6 @@ function [x_g] = gauss(A,b) %Funzione di gauss con pivoting parziale virtuale
        error("Gauss:Il sistema è singolare.")
    end
    %Back substitution
-     x_g(1:n)=back_sub(A(piv(1:n),1:n),b(piv(1:n)));
+      x_g(1:n)=back_sub_gauss(A,b,piv);
   
 end
