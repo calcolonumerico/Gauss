@@ -92,8 +92,8 @@ function [x] = risolve(A,b,opt)
        error("Il primo input deve essere una matrice.")
     elseif(issparse(A)||isempty(A))
        error("La matrice non deve essere sparsa o vuota.")
-    elseif(size(A,1)~=size(A,2))
-        error("La matrice deve essere quadrata.")
+    elseif(size(A,1)~=size(A,2)||length(A)<2)
+        error("La matrice deve essere quadrata di dimensione almeno 2x2.")
     elseif(~isnumeric(A) ||~isreal(A)||any(any(~isfinite(A)))|| any(any(~isa(A,'double')))||any(any(isnan(A))))
       error("Gli elementi della matrice devono essere numeri reali double finiti.")
     end
@@ -138,7 +138,7 @@ function [x] = risolve(A,b,opt)
         x=forward_sub(A,b);
     elseif(opt.full)
         if(istriu(A)||istril(A))
-            warning("La struttura non è conforme con la matrice,deve essere piena, i calcoli potrebbero essere sbagliati.")
+            warning("La struttura non è conforme con la matrice,deve essere piena, i calcoli potrebbero essere più lenti.")
         end
         x=gauss(A,b);
     end
@@ -179,12 +179,12 @@ end
 function [x_g] = gauss(A,b) %Funzione di gauss con pivoting parziale virtuale
    n=length(A);
    piv=[1:n]';
-   
+   norma=eps(norm(A));
    for k=1:n-1
     [pivot,r]=max(abs(A(piv(k:n),k)));
     r=r+k-1;
    
-     if abs(pivot)>eps(norm(A))
+     if abs(pivot)>norma
        if(r~=k)
              piv([r k])=piv([k r]);
        end
@@ -196,7 +196,7 @@ function [x_g] = gauss(A,b) %Funzione di gauss con pivoting parziale virtuale
      end
             
    end
-   if abs(A(piv(n),n))<=eps(norm(A))
+   if abs(A(piv(n),n))<=norma
        error("Gauss:Il sistema è singolare.")
    end
    %Back substitution
