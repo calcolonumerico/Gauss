@@ -120,7 +120,7 @@ function [x] = risolve(A,b,opt)
        error("Uno e un solo campo della struttura deve essere true.")
    end
    
-   if((istriu(A)||istril(A)) && any(find(abs(diag(A))<=eps(norm(A))))==1)
+   if((istriu(A)||istril(A)) && any(find(abs(diag(A))<=eps(norm(A,Inf))))==1)
       error("La matrice triangolare è singolare.")
    end
    
@@ -179,7 +179,7 @@ end
 function [x_g] = gauss(A,b) %Funzione di gauss con pivoting parziale virtuale
    n=length(A);
    piv=[1:n]';
-   norma=eps(norm(A));
+   norma=eps(norm(A,Inf));
    for k=1:n-1
     [pivot,r]=max(abs(A(piv(k:n),k)));
     r=r+k-1;
