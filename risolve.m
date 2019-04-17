@@ -94,7 +94,7 @@ function [x] = risolve(A,b,opt)
        error("La matrice non deve essere sparsa o vuota.")
     elseif(size(A,1)~=size(A,2)||length(A)<2)
         error("La matrice deve essere quadrata di dimensione almeno 2x2.")
-    elseif(~isnumeric(A) ||~isreal(A)||any(any(~isfinite(A)))|| any(any(~isa(A,'double')))||any(any(isnan(A))))
+    elseif(~isnumeric(A) ||~isreal(A)||any(~isfinite(A(:)))|| any(~isa(A(:),'double'))||any(isnan(A(:))))
       error("Gli elementi della matrice devono essere numeri reali double finiti.")
     end
    
